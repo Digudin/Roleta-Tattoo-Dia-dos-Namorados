@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roleta Mística do Amor e da Tatuagem</title>
+<style>
+  body {
+  position: relative;
+  background: #111 url('https://wallpapers.com/images/hd/tattoo-background-e3kz48tcebllcbtp.jpg') no-repeat center center fixed;
+  background-size: cover;
+  color: #ffd700;
+  font-family: 'Courier New', monospace;
+  text-align: center;
+  margin: 0;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.6); /* Película preta com 60% de opacidade */
+  z-index: 0;
+}
+
+/* Para garantir que o conteúdo fique por cima da película */
+body > * {
+  position: relative;
+  z-index: 1;
+}
+  canvas {
+    display: block;
+    margin: 20px auto;
+    max-width: 90vw;
+    height: auto;
+    background: rgba(0, 0, 0, 0.9);
+    border: 5px solid #ffd700;
+    border-radius: 50%;
+    box-shadow: 0 0 25px rgba(255, 0, 0, 0.6);
+  }
+  #result {
+    font-size: 1.3em;
+    margin: 15px 10px;
+    color: #ffffff;
+    text-shadow: 0 0 5px red;
+  }
+  button {
+    display: block;
+    width: 80%;
+    margin: 15px auto;
+    padding: 12px 0;
+    font-size: 1.1em;
+    background: #d00000;
+    color: #fff;
+    border: 2px solid #ffd700;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: 0 0 15px rgba(255, 0, 0, 0.6);
+    transition: transform 0.2s ease;
+  }
+  button:hover {
+    transform: scale(1.05);
+    background: #a00000;
+  }
+  h1 {
+    text-shadow: 0 0 5px black;
+    font-size: 1.8em;
+    margin: 10px;
+  }
+</style>
+</head>
+<body>
+
+<h1>💀 Roleta do Amor 💀</h1>
+<canvas id="wheel" width="300" height="300"></canvas>
+<button id="spinBtn">Girar o Destino</button>
+<div id="result"></div>
+
+<script>
+const canvas = document.getElementById('wheel');
+const ctx = canvas.getContext('2d');
+const resultDiv = document.getElementById('result');
+const spinBtn = document.getElementById('spinBtn');
+
+const options = [
+  'Tattoo BRINDE (10cm)',
+  '50% tattoo (7cm)',
+  '30% QUALQUER TATTOO',
+  '20% tattoo (7cm)',
+  '70% tattoo (7cm)',
+  'Desenho Autoral',
+  'R$50 próxima tattoo',
+  'Nada rsrs'
+];
+
+const probabilities = [1, 10, 15, 24, 15, 20, 10, 5];
+const numOptions = options.length;
+const anglePerOption = 2 * Math.PI / numOptions;
+
+function drawWheel(rotation) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.save();
+  ctx.translate(canvas.width / 2, canvas.height / 2);
+  ctx.rotate(rotation);
+
+  for (let i = 0; i < numOptions; i++) {
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.fillStyle = i % 2 === 0 ? '#c20000' : '#222';
+    ctx.arc(0, 0, canvas.width / 2 - 5, i * anglePerOption, (i + 1) * anglePerOption);
+    ctx.fill();
+
+    ctx.save();
+    ctx.rotate(anglePerOption * (i + 0.5));
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 11px monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    const text = options[i];
+    const maxWidth = canvas.width / 2 - 25;
+    const lines = wrapText(text, maxWidth, ctx);
+
+    const lineHeight = 14;
+    const totalHeight = lines.length * lineHeight;
+    let y = -totalHeight / 2;
+
+    for (let line of lines) {
+      ctx.fillText(line, canvas.width / 2 - 55, y);
+      y += lineHeight;
+    }
+
+    ctx.restore();
+  }
+
+  ctx.restore();
+
+  // Indicador
+  ctx.fillStyle = '#ffd700';
+  ctx.beginPath();
+  ctx.moveTo(canvas.width / 2, 5);
+  ctx.lineTo(canvas.width / 2 - 10, 25);
+  ctx.lineTo(canvas.width / 2 + 10, 25);
+  ctx.fill();
+}
+
+function wrapText(text, maxWidth, context) {
+  const words = text.split(' ');
+  const lines = [];
+  let currentLine = words[0];
+
+  for (let i = 1; i < words.length; i++) {
+    const word = words[i];
+    const width = context.measureText(currentLine + ' ' + word).width;
+    if (width < maxWidth) {
+      currentLine += ' ' + word;
+    } else {
+      lines.push(currentLine);
+      currentLine = word;
+    }
+  }
+  lines.push(currentLine);
+  return lines;
+}
+
+function easeOutCubic(t) {
+  return 1 - Math.pow(1 - t, 3);
+}
+
+function getRandomIndex(probabilities) {
+  const total = probabilities.reduce((acc, val) => acc + val, 0);
+  const random = Math.random() * total;
+  let cumulative = 0;
+
+  for (let i = 0; i < probabilities.length; i++) {
+    cumulative += probabilities[i];
+    if (random < cumulative) {
+      return i;
+    }
+  }
+  return probabilities.length - 1;
+}
+
+function spinWheel() {
+  const index = getRandomIndex(probabilities);
+  const finalAngle = 3 * Math.PI / 2 - (index * anglePerOption + anglePerOption / 2);
+  const spins = Math.floor(Math.random() * 2) + 3;
+  const totalRotation = spins * 2 * Math.PI + finalAngle;
+
+  let currentRotation = 0;
+  const duration = 3000;
+  const start = performance.now();
+
+  function animate(time) {
+    const progress = (time - start) / duration;
+    if (progress < 1) {
+      currentRotation = totalRotation * easeOutCubic(progress);
+      drawWheel(currentRotation);
+      requestAnimationFrame(animate);
+    } else {
+      currentRotation = totalRotation;
+      drawWheel(currentRotation);
+      showResult(index);
+    }
+  }
+
+  requestAnimationFrame(animate);
+}
+
+function showResult(index) {
+  const selectedOption = options[index];
+  resultDiv.innerHTML = `🤍 Resultado: <strong>${selectedOption}</strong> 🤍`;
+}
+
+drawWheel(0);
+
+spinBtn.addEventListener('click', () => {
+  resultDiv.textContent = '';
+  spinWheel();
+});
+</script>
+
+</body>
+</html>
